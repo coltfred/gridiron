@@ -17,6 +17,22 @@ pub mod digits {
 const BITSPERBYTE: usize = 8;
 const U64BYTES: usize = 8;
 
+fp!(
+    fr_256,   // Name of mod
+    Fr256,    // Name of class
+    256,      // Number of bits for prime
+    4,        // Number of limbs (ceil(bits/64))
+    [1886713967064937057,
+     3354493509585025316,
+     12281294985516866593,
+     10355184993929758713],
+    [15618948758334012843,
+     1416387596196228984,
+     2174143271902072373,
+     14414317039193118239,
+     1]
+);
+
 // p = 3121577065842246806003085452055281276803074876175537384188619957989004527066410274868798956582915008874704066849018213144375771284425395508176023
 //   = 0xfffc6664 0e249d9ec75ad529 0b81a85d415797b9 31258da0d78b58a2 1c435cddb02e0add 635a037371d1e9a4 0a5ec1d6ed637bd3 695530683ee96497
 fp!(
@@ -84,6 +100,22 @@ impl From<[u8; 64]> for fp_256::Fp256 {
         fp_256::Fp256::new(fp_256::reduce_barrett(&limbs))
     }
 }
+
+impl From<[u8; 64]> for fr_256::Fr256 {
+    fn from(src: [u8; 64]) -> Self {
+        // our input is the exact length we need for our
+        // optimized barrett reduction
+        let limbs = eight_limbs_from_sixtyfour_bytes(src);
+        fr_256::Fr256::new(fr_256::reduce_barrett(&limbs))
+    }
+}
+
+impl From<fp_256::Fp256> for fr_256::Fr256 {
+    fn from(src: fp_256::Fp256) -> Self {
+        From::from(src.to_bytes_array())
+    }
+}
+
 
 impl From<[u8; 64]> for fp_480::Fp480 {
     fn from(src: [u8; 64]) -> Self {
